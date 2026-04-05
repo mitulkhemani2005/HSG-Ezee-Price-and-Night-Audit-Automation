@@ -142,7 +142,7 @@ def run_price_update(prices):
     for attempt in range(3):
         try:
             with sync_playwright() as p:
-                browser = p.chromium.launch(headless=False)
+                browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
                 page.goto("https://live.ipms247.com/login/")
                 page.fill("#username", EZEEUSER)
