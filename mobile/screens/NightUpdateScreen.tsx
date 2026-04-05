@@ -204,8 +204,7 @@ export default function NightUpdateScreen() {
             <View style={styles.warningCard}>
               <MaterialCommunityIcons name="wifi-off" size={20} color="#ef5350" />
               <Text style={styles.warningText}>
-                Cannot reach backend. Make sure the server is running and your
-                phone is on the same Wi-Fi network.
+                Cannot reach backend. Make sure the server is running on AWS EC2.
               </Text>
             </View>
           )}

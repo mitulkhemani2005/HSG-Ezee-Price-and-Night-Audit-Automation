@@ -9,6 +9,8 @@ interface NightFormData {
 }
 
 export default function NightUpdateForm() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
   const [formData, setFormData] = useState<NightFormData>({
     updateTime: '',
   });
@@ -19,7 +21,7 @@ export default function NightUpdateForm() {
   useEffect(() => {
     const fetchAuditTime = async () => {
       try {
-        const response = await fetch('http://localhost:8000/audit/time');
+        const response = await fetch(`${API_URL}/audit/time`);
         if (response.ok) {
           const data = await response.json();
           if (data.time) {
@@ -45,7 +47,7 @@ export default function NightUpdateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/audit/time', {
+      const response = await fetch(`${API_URL}/audit/time`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +79,7 @@ export default function NightUpdateForm() {
     if (!confirm('Are you sure you want to delete the scheduled night audit?')) return;
     
     try {
-      const response = await fetch('http://localhost:8000/audit/time', {
+      const response = await fetch(`${API_URL}/audit/time`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete');

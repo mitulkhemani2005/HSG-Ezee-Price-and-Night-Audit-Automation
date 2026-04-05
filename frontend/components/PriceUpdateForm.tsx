@@ -13,6 +13,7 @@ interface PriceFormData {
 }
 
 export default function PriceUpdateForm() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const [formData, setFormData] = useState<PriceFormData>({
     categoryA: '',
     categoryB: '',
@@ -34,7 +35,7 @@ export default function PriceUpdateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/price/schedule', {
+      const response = await fetch(`${API_URL}/price/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

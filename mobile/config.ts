@@ -11,7 +11,7 @@
 // Keep port 8000 (or whatever port your backend runs on).
 // ============================================================
 
-export const API_URL = 'http://172.22.57.37:8000';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Connection timeout in milliseconds
 export const API_TIMEOUT = 10000;

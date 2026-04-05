@@ -12,7 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTabletMode": true,
+      "supportsTablet": true,
       "bundleIdentifier": "com.hotelshreegopal.manager"
     },
     "android": {
@@ -20,7 +20,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.hotelshreegopal.manager"
+      "package": "com.hotelshreegopal.manager",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,7 +35,20 @@
           "photosPermission": "The app accesses your photos to let you manage hotel images.",
           "cameraPermission": "The app uses the camera to capture hotel updates."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "466be2eb-facd-4d03-8676-1f32d9d222d9"
+      }
+    }
   }
 }
