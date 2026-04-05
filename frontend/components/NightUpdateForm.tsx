@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,24 @@ export default function NightUpdateForm() {
   const [submitted, setSubmitted] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
 
+  useEffect(() => {
+    const fetchAuditTime = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/audit/time');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.time) {
+            setSelectedTime(data.time);
+            setFormData({ updateTime: data.time });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load initial audit time', error);
+      }
+    };
+    fetchAuditTime();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setFormData({
@@ -24,17 +42,53 @@ export default function NightUpdateForm() {
     setSelectedTime(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Night Update Data:', formData);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        updateTime: '',
+    try {
+      const response = await fetch('http://localhost:8000/audit/time', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          time: formData.updateTime,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to schedule');
+      }
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          updateTime: '',
+        });
+        setSelectedTime('');
+      }, 2000);
+    } catch (error) {
+      console.error('Error scheduling audit:', error);
+      alert('Failed to schedule night audit. Is the backend running?');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete the scheduled night audit?')) return;
+    
+    try {
+      const response = await fetch('http://localhost:8000/audit/time', {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete');
+      
+      alert('Night audit schedule removed');
       setSelectedTime('');
-    }, 2000);
+      setFormData({ updateTime: '' });
+    } catch (error) {
+      console.error('Error deleting:', error);
+      alert('Failed to delete schedule.');
+    }
   };
 
   const buttonText = submitted ? '✓ Night Schedule Updated!' : 'Schedule Night Update';
@@ -56,6 +110,7 @@ export default function NightUpdateForm() {
             🌙 Time to Update Night Pricing
           </label>
           <input
+            suppressHydrationWarning
             type="time"
             id="nightTime"
             value={formData.updateTime}
@@ -64,13 +119,24 @@ export default function NightUpdateForm() {
             className="w-full px-6 py-4 bg-input border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-foreground text-lg"
           />
           {selectedTime && (
-            <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
-              <p className="text-sm text-foreground">
-                <span className="font-semibold">Selected Time:</span> {selectedTime}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Night pricing will be applied at this time daily
-              </p>
+            <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg flex justify-between items-center">
+              <div>
+                <p className="text-sm text-foreground">
+                  <span className="font-semibold">Selected Time:</span> {selectedTime}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Night pricing will be applied at this time daily
+                </p>
+              </div>
+              <Button 
+                type="button" 
+                variant="destructive" 
+                size="sm"
+                onClick={handleDelete}
+                className="shadow-sm hover:shadow"
+              >
+                Delete
+              </Button>
             </div>
           )}
         </div>
@@ -94,6 +160,7 @@ export default function NightUpdateForm() {
         {/* Submit Button */}
         <div className="pt-6">
           <Button
+            suppressHydrationWarning
             type="submit"
             className={`w-full py-4 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 text-lg ${buttonClass}`}
           >

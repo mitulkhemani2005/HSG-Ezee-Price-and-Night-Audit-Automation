@@ -14,7 +14,7 @@ export default function Header() {
           </div>
           <div className="text-right">
             <p className="text-sm text-primary-foreground/80">Admin Panel</p>
-            <p className="text-xs text-primary-foreground/60 mt-1">
+            <p className="text-xs text-primary-foreground/60 mt-1" suppressHydrationWarning>
               {new Date().toLocaleDateString('en-IN', {
                 weekday: 'long',
                 year: 'numeric',

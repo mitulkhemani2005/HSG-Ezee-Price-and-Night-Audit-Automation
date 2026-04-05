@@ -16,6 +16,7 @@ export default function Home() {
         {/* Tab Navigation */}
         <div className="flex gap-4 mb-8">
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('price')}
             className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
               activeTab === 'price'
@@ -26,6 +27,7 @@ export default function Home() {
             💰 Price Update
           </button>
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('night')}
             className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
               activeTab === 'night'

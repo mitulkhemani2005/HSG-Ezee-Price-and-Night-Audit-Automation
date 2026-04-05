@@ -31,20 +31,44 @@ export default function PriceUpdateForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Price Update Data:', formData);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        categoryA: '',
-        categoryB: '',
-        categoryC: '',
-        categoryD: '',
-        updateTime: '',
+    try {
+      const response = await fetch('http://localhost:8000/price/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          time: formData.updateTime,
+          prices: {
+            A: parseInt(formData.categoryA),
+            B: parseInt(formData.categoryB),
+            C: parseInt(formData.categoryC),
+            D: parseInt(formData.categoryD),
+          }
+        }),
       });
-    }, 2000);
+
+      if (!response.ok) {
+        throw new Error('Failed to update');
+      }
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          categoryA: '',
+          categoryB: '',
+          categoryC: '',
+          categoryD: '',
+          updateTime: '',
+        });
+      }, 2000);
+    } catch (error) {
+      console.error('Error updating prices:', error);
+      alert('Failed to schedule price update. Is the backend running?');
+    }
   };
 
   const buttonText = submitted ? '✓ Prices Updated Successfully!' : 'Update All Prices';
@@ -61,15 +85,16 @@ export default function PriceUpdateForm() {
         {/* Category A */}
         <div className="group">
           <label htmlFor="categoryA" className="block text-sm font-semibold text-foreground mb-2">
-            Category A Price
+            Deluxe Queen AC Room
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
+              suppressHydrationWarning
               type="number"
               id="categoryA"
               name="categoryA"
-              placeholder="Enter price (e.g., 2999)"
+              placeholder="Enter price"
               value={formData.categoryA}
               onChange={handleInputChange}
               required
@@ -81,15 +106,16 @@ export default function PriceUpdateForm() {
         {/* Category B */}
         <div className="group">
           <label htmlFor="categoryB" className="block text-sm font-semibold text-foreground mb-2">
-            Category B Price
+            Standard Queen AC Room
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
+              suppressHydrationWarning
               type="number"
               id="categoryB"
               name="categoryB"
-              placeholder="Enter price (e.g., 3499)"
+              placeholder="Enter price"
               value={formData.categoryB}
               onChange={handleInputChange}
               required
@@ -101,15 +127,16 @@ export default function PriceUpdateForm() {
         {/* Category C */}
         <div className="group">
           <label htmlFor="categoryC" className="block text-sm font-semibold text-foreground mb-2">
-            Category C Price
+            Single AC Room
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
+              suppressHydrationWarning
               type="number"
               id="categoryC"
               name="categoryC"
-              placeholder="Enter price (e.g., 3999)"
+              placeholder="Enter price"
               value={formData.categoryC}
               onChange={handleInputChange}
               required
@@ -121,15 +148,16 @@ export default function PriceUpdateForm() {
         {/* Category D */}
         <div className="group">
           <label htmlFor="categoryD" className="block text-sm font-semibold text-foreground mb-2">
-            Category D Price
+            Single Non AC Room
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
+              suppressHydrationWarning
               type="number"
               id="categoryD"
               name="categoryD"
-              placeholder="Enter price (e.g., 4499)"
+              placeholder="Enter price"
               value={formData.categoryD}
               onChange={handleInputChange}
               required
@@ -144,6 +172,7 @@ export default function PriceUpdateForm() {
             Time to Update Price
           </label>
           <input
+            suppressHydrationWarning
             type="time"
             id="updateTime"
             name="updateTime"
@@ -157,6 +186,7 @@ export default function PriceUpdateForm() {
         {/* Submit Button */}
         <div className="pt-6 flex gap-4">
           <Button
+            suppressHydrationWarning
             type="submit"
             className={`flex-1 py-3 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 ${buttonClass}`}
           >
@@ -168,20 +198,20 @@ export default function PriceUpdateForm() {
       {/* Info Cards */}
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-secondary mb-1">Category A</div>
-          <div className="text-xs text-muted-foreground">Standard Room</div>
+          <div className="text-xl font-bold text-secondary mb-1">Deluxe Queen AC Room</div>
+          <div className="text-xs text-muted-foreground">Category A</div>
         </div>
         <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-accent mb-1">Category B</div>
-          <div className="text-xs text-muted-foreground">Deluxe Room</div>
+          <div className="text-xl font-bold text-accent mb-1">Standard Queen AC Room</div>
+          <div className="text-xs text-muted-foreground">Category B</div>
         </div>
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-primary mb-1">Category C</div>
-          <div className="text-xs text-muted-foreground">Premium Room</div>
+          <div className="text-xl font-bold text-primary mb-1">Single AC Room</div>
+          <div className="text-xs text-muted-foreground">Category C</div>
         </div>
         <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-secondary mb-1">Category D</div>
-          <div className="text-xs text-muted-foreground">Suite Room</div>
+          <div className="text-xl font-bold text-secondary mb-1">Single Non AC Room</div>
+          <div className="text-xs text-muted-foreground">Category D</div>
         </div>
       </div>
     </Card>
