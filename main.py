@@ -6,16 +6,26 @@ import os
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 import threading
+import smtplib
+from email.mime.text import MIMEText
+import firebase_admin
+from firebase_admin import credentials, messaging
 
-load_dotenv()
+load_dotenv(override=True)
 
 EZEEUSER = os.getenv("EZEEUSER")
 PASSWORD = os.getenv("PASSWORD")
 PROPCODE = os.getenv("PROPCODE")
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASS = os.getenv("EMAIL_PASS")
+SENDTOUSER = os.getenv("SENDTOUSER")
 
 app = FastAPI()
 scheduler = BackgroundScheduler()
 scheduler.start()
+cred = credentials.Certificate("hsg-price-night-audit-firebase.json")
+firebase_admin.initialize_app(cred)
+DEVICE_TOKENS = []
 
 class PriceData(BaseModel):
     A: int
@@ -66,7 +76,16 @@ def set_audit(data: AuditConfig):
 def get_audit():
     return read_json("audit_config.json")
 
-#Scheduled Functions
+@app.get("/test")
+def test():
+    run_price_update_async({"A":3500,"B":2500,"C":2200,"D":1800})
+    return {"status": "done"}
+
+@app.post("/register-device")
+def register_device(token: str):
+    DEVICE_TOKENS.append(token)
+    return {"status": "registered"}
+
 def set_value(page, selector, value):
     page.wait_for_selector(selector)
     page.click(selector)
@@ -99,20 +118,14 @@ def run_price_update(prices):
                 page.get_by_role("button", name="Save").click()
                 page.wait_for_timeout(5000)
                 browser.close()
+                notify("Price Update Success", "Prices updated successfully")
                 return
         except Exception as e:
-            print("❌ Error:", e)
             if attempt == 2:
-                print("❌ Failed after retries")
+                notify("Price Update Failed", "Prices failed to update")
 
 def run_price_update_async(prices):
     threading.Thread(target=run_price_update, args=(prices,)).start()
-
-@app.get("/test")
-def test():
-    run_price_update_async({"A":3500,"B":2500,"C":2200,"D":1800})
-    return {"status": "done"}
-
 
 def run_audit():
     print("Running night audit")
@@ -148,6 +161,38 @@ def schedule_jobs():
         id="audit_job",
         replace_existing=True
     )
+
+def send_email(subject, body):
+    try:
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = EMAIL_USER
+        msg["To"] = SENDTOUSER
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(EMAIL_USER, EMAIL_PASS)
+            server.send_message(msg)
+
+    except Exception as e:
+        print("Email error:", e)
+
+def send_push(title, body):
+    for token in DEVICE_TOKENS:
+        try:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body,
+                ),
+                token=token,
+            )
+            messaging.send(message)
+        except Exception as e:
+            print("Push error:", e)
+
+def notify(title, message):
+    send_email(title, message)
+    send_push(title, message)
 
 @app.on_event("startup")
 def startup_event():
