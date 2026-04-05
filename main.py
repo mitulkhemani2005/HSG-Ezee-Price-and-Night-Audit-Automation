@@ -2,6 +2,16 @@ from fastapi import FastAPI
 import json
 from pydantic import BaseModel
 from apscheduler.schedulers.background import BackgroundScheduler
+import os
+from dotenv import load_dotenv
+from playwright.sync_api import sync_playwright
+import threading
+
+load_dotenv()
+
+EZEEUSER = os.getenv("EZEEUSER")
+PASSWORD = os.getenv("PASSWORD")
+PROPCODE = os.getenv("PROPCODE")
 
 app = FastAPI()
 scheduler = BackgroundScheduler()
@@ -57,8 +67,52 @@ def get_audit():
     return read_json("audit_config.json")
 
 #Scheduled Functions
+def set_value(page, selector, value):
+    page.wait_for_selector(selector)
+    page.click(selector)
+    page.keyboard.press("Control+A")
+    page.keyboard.press("Backspace")
+    page.type(selector, str(value))
+
 def run_price_update(prices):
-    print("Running price update:", prices)
+    for attempt in range(3):
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=False)
+                page = browser.new_page()
+                page.goto("https://live.ipms247.com/login/")
+                page.fill("#username", EZEEUSER)
+                page.fill("#password", PASSWORD)
+                page.fill("#hotelcode", PROPCODE)
+                page.wait_for_selector("button#login")
+                page.get_by_role("button", name="SIGN IN").click()
+                page.wait_for_url("**/unity/**")
+                page.goto("https://live.ipms247.com/unity/ratewizard/ratesinventory")
+                page.wait_for_selector("#input-2-1-3")
+                set_value(page, "#input-2-1-3", prices["A"])
+                page.wait_for_timeout(500)
+                set_value(page, "#input-2-7-3", prices["B"])
+                page.wait_for_timeout(500)
+                set_value(page, "#input-2-3-3", prices["C"])
+                page.wait_for_timeout(500)
+                set_value(page, "#input-2-5-3", prices["D"])
+                page.get_by_role("button", name="Save").click()
+                page.wait_for_timeout(5000)
+                browser.close()
+                return
+        except Exception as e:
+            print("❌ Error:", e)
+            if attempt == 2:
+                print("❌ Failed after retries")
+
+def run_price_update_async(prices):
+    threading.Thread(target=run_price_update, args=(prices,)).start()
+
+@app.get("/test")
+def test():
+    run_price_update_async({"A":3500,"B":2500,"C":2200,"D":1800})
+    return {"status": "done"}
+
 
 def run_audit():
     print("Running night audit")
@@ -74,7 +128,7 @@ def schedule_jobs():
         h, m = map(int, time.split(":"))
 
         scheduler.add_job(
-            run_price_update,
+            run_price_update_async,
             'cron',
             hour=h,
             minute=m,
