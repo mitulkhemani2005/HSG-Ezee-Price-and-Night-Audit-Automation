@@ -166,6 +166,7 @@ def run_price_update(prices):
                 notify("Price Update Success", "Prices updated successfully")
                 return
         except Exception as e:
+            print(f"Playwright error on attempt {attempt}:", e)
             if attempt == 2:
                 notify("Price Update Failed", "Prices failed to update")
 
@@ -177,8 +178,11 @@ def run_price_update_async(time_str, prices):
             schedules = read_json("price_schedules.json")
             schedules = [s for s in schedules if s["time"] != time_str]
             write_json("price_schedules.json", schedules)
-            # Remove from APScheduler
-            scheduler.remove_job(f"price_{time_str}")
+            # Remove from APScheduler ONLY if it still exists
+            try:
+                scheduler.remove_job(f"price_{time_str}")
+            except Exception:
+                pass # Job was likely already automatically deleted by APScheduler
         except Exception as e:
             print("Cleanup error:", e)
             
@@ -192,7 +196,10 @@ def run_audit_async():
         run_audit()
         try:
             write_json("audit_config.json", {})
-            scheduler.remove_job("audit_job")
+            try:
+                scheduler.remove_job("audit_job")
+            except Exception:
+                pass
         except Exception as e:
             print("Cleanup error:", e)
             
