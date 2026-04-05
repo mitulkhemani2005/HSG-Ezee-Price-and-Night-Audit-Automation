@@ -13,6 +13,7 @@ device_tokens.json
 # Runtime Configuration & Databases
 price_schedules.json
 audit_config.json
+hsg.pem
 
 # IDE / OS
 .DS_Store
