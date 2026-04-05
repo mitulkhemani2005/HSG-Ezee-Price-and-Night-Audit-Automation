@@ -1,3 +1,4 @@
-fastApi
+fastapi
 uvicorn
 pydantic
+apscheduler
