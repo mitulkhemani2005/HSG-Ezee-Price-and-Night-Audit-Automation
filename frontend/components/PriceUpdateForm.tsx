@@ -13,7 +13,8 @@ interface PriceFormData {
 }
 
 export default function PriceUpdateForm() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  // Use Next.js rewrite proxy (/api) to avoid CORS and ngrok warning pages
+  const API_URL = '/api';
   const [formData, setFormData] = useState<PriceFormData>({
     categoryA: '',
     categoryB: '',

@@ -47,8 +47,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "466be2eb-facd-4d03-8676-1f32d9d222d9"
+        "projectId": "a94d88c1-7583-4ef3-9a72-f2b2cbe4eb1d"
       }
-    }
+    },
+    "owner": "mitulkhemani"
   }
 }
