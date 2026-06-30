@@ -211,6 +211,8 @@ def schedule_jobs():
 
     # Load price schedules
     schedules = read_json("price_schedules.json")
+    active_schedules = []
+    schedules_updated = False
 
     for job in schedules:
         time_str = job["time"]
@@ -222,9 +224,13 @@ def schedule_jobs():
             # If they just missed it by less than 2 minutes, trigger it right now
             if (now - target).total_seconds() < 120:
                 target = now + timedelta(seconds=2)
+                active_schedules.append(job)
             else:
-                # Target tomorrow instead
-                target = target + timedelta(days=1)
+                # Expired/past schedule - discard and remove from JSON
+                schedules_updated = True
+                continue
+        else:
+            active_schedules.append(job)
 
         scheduler.add_job(
             run_price_update_async,
@@ -235,25 +241,32 @@ def schedule_jobs():
             replace_existing=True
         )
 
+    if schedules_updated:
+        write_json("price_schedules.json", active_schedules)
+
     # Load audit time
     audit = read_json("audit_config.json")
     if "time" in audit and audit["time"]:
         h, m = map(int, audit["time"].split(":"))
         
         target = now.replace(hour=h, minute=m, second=0, microsecond=0)
+        should_schedule = True
         if target < now:
             if (now - target).total_seconds() < 120:
                 target = now + timedelta(seconds=2)
             else:
-                target = target + timedelta(days=1)
+                # Expired/past audit - discard
+                write_json("audit_config.json", {})
+                should_schedule = False
 
-        scheduler.add_job(
-            run_audit_async,
-            'date',
-            run_date=target,
-            id="audit_job",
-            replace_existing=True
-        )
+        if should_schedule:
+            scheduler.add_job(
+                run_audit_async,
+                'date',
+                run_date=target,
+                id="audit_job",
+                replace_existing=True
+            )
 
 def send_email(subject, body):
     try:
