@@ -6,7 +6,6 @@ env/
 
 # Environment Variables & Keys
 .env
-.env.*
 hsg-price-night-audit-firebase.json
 device_tokens.json
 
