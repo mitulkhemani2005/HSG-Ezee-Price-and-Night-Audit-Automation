@@ -3,7 +3,7 @@ import path from 'path';
 
 // Load environment variables from the root .env file
 const rootEnvPath = path.resolve(process.cwd(), '../.env');
-let envApiUrl = 'http://localhost:8000';
+let envApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 if (fs.existsSync(rootEnvPath)) {
   const envContent = fs.readFileSync(rootEnvPath, 'utf-8');
