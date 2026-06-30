@@ -10,7 +10,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://98.88.83.55:8000"
+        "EXPO_PUBLIC_API_URL": "https://corporal-faceplate-cornhusk.ngrok-free.dev"
       }
     },
     "production": {
@@ -18,7 +18,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://98.88.83.55:8000"
+        "EXPO_PUBLIC_API_URL": "https://corporal-faceplate-cornhusk.ngrok-free.dev"
       }
     }
   },
