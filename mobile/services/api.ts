@@ -13,10 +13,6 @@ export interface PriceSchedule {
   prices: PriceData;
 }
 
-export interface AuditConfig {
-  time: string;
-}
-
 // ── Helper ──────────────────────────────────────────────
 async function fetchWithTimeout(
   url: string,
@@ -45,6 +41,7 @@ async function apiRequest<T>(
   const response = await fetchWithTimeout(url, {
     headers: {
       'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
       ...options.headers,
     },
     ...options,
@@ -91,23 +88,9 @@ export async function deleteSchedule(time: string): Promise<{ message: string; d
   });
 }
 
-// ── Night Audit ─────────────────────────────────────────
-export async function getAuditTime(): Promise<AuditConfig> {
-  return apiRequest<AuditConfig>('/audit/time', {
+export async function getPreviousPrices(): Promise<{ prices: PriceData; remaining: PriceData }> {
+  return apiRequest<{ prices: PriceData; remaining: PriceData }>('/price/previous', {
     method: 'GET',
-  });
-}
-
-export async function setAuditTime(time: string): Promise<{ message: string }> {
-  return apiRequest('/audit/time', {
-    method: 'POST',
-    body: JSON.stringify({ time }),
-  });
-}
-
-export async function deleteAuditTime(): Promise<{ message: string }> {
-  return apiRequest('/audit/time', {
-    method: 'DELETE',
   });
 }
 

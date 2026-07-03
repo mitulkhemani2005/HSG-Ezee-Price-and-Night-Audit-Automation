@@ -17,7 +17,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { PaperProvider } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import PriceUpdateScreen from './screens/PriceUpdateScreen';
-import NightUpdateScreen from './screens/NightUpdateScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -71,13 +70,7 @@ export default function App() {
           screenOptions={({ route }) => ({
             headerShown: false,
             tabBarIcon: ({ focused, color, size }) => {
-              let iconName;
-              if (route.name === 'PriceUpdate') {
-                iconName = focused ? 'currency-inr' : 'currency-inr';
-              } else if (route.name === 'NightUpdate') {
-                iconName = focused ? 'moon-waning-crescent' : 'moon-waning-crescent';
-              }
-              return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
+              return <MaterialCommunityIcons name="currency-inr" size={size} color={color} />;
             },
             tabBarActiveTintColor: '#b88a5f',
             tabBarInactiveTintColor: '#999999',
@@ -88,7 +81,7 @@ export default function App() {
               paddingTop: 8,
               paddingBottom: 8,
             },
-            tabBarLabel: route.name === 'PriceUpdate' ? 'Price Update' : 'Night Update',
+            tabBarLabel: 'Price Update',
           })}
         >
           <Tab.Screen
@@ -96,13 +89,6 @@ export default function App() {
             component={PriceUpdateScreen}
             options={{
               title: 'Price Update',
-            }}
-          />
-          <Tab.Screen
-            name="NightUpdate"
-            component={NightUpdateScreen}
-            options={{
-              title: 'Night Update',
             }}
           />
         </Tab.Navigator>

@@ -21,6 +21,7 @@ import {
   addSchedule,
   deleteSchedule,
   PriceSchedule,
+  getPreviousPrices,
 } from '../services/api';
 
 interface FormData {
@@ -41,6 +42,44 @@ export default function PriceUpdateScreen() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
+  const [previousPrices, setPreviousPrices] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+  const [remainingRooms, setRemainingRooms] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+
+  const handleFetchPrevious = async (isManual = false) => {
+    setIsFetchingPrevious(true);
+    try {
+      const data = await getPreviousPrices();
+      if (data && data.prices) {
+        setFormData((prev) => ({
+          ...prev,
+          categoryA: (!isManual && prev.categoryA) ? prev.categoryA : (data.prices.A?.toString() || ''),
+          categoryB: (!isManual && prev.categoryB) ? prev.categoryB : (data.prices.B?.toString() || ''),
+          categoryC: (!isManual && prev.categoryC) ? prev.categoryC : (data.prices.C?.toString() || ''),
+          categoryD: (!isManual && prev.categoryD) ? prev.categoryD : (data.prices.D?.toString() || ''),
+        }));
+        setPreviousPrices(data.prices);
+        if (data.remaining) {
+          setRemainingRooms(data.remaining);
+        }
+        if (isManual) {
+          Alert.alert('Success', "Successfully fetched previous day's prices and remaining rooms!");
+        }
+      } else {
+        throw new Error('No price data returned');
+      }
+    } catch (error) {
+      console.error('Error fetching previous prices:', error);
+      if (isManual) {
+        Alert.alert(
+          'Error',
+          'Failed to fetch previous day prices and remaining rooms. Please check backend connection.'
+        );
+      }
+    } finally {
+      setIsFetchingPrevious(false);
+    }
+  };
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [time, setTime] = useState(new Date());
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
@@ -68,6 +107,7 @@ export default function PriceUpdateScreen() {
 
   useEffect(() => {
     loadData();
+    handleFetchPrevious(false);
   }, [loadData]);
 
   const onRefresh = useCallback(() => {
@@ -249,7 +289,16 @@ export default function PriceUpdateScreen() {
           <View style={styles.formContainer}>
             {/* Category A */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Deluxe Queen AC Room</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Deluxe Queen AC Room</Text>
+                {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
+                  <Text style={styles.subLabel}>
+                    {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
+                    {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
+                    {remainingRooms.A !== undefined && `Rem: ${remainingRooms.A}`}
+                  </Text>
+                )}
+              </View>
               <View style={styles.inputWrapper}>
                 <MaterialCommunityIcons name="currency-inr" size={20} color="#b88a5f" />
                 <TextInput
@@ -265,7 +314,16 @@ export default function PriceUpdateScreen() {
 
             {/* Category B */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Standard Queen AC Room</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Standard Queen AC Room</Text>
+                {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
+                  <Text style={styles.subLabel}>
+                    {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
+                    {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
+                    {remainingRooms.B !== undefined && `Rem: ${remainingRooms.B}`}
+                  </Text>
+                )}
+              </View>
               <View style={styles.inputWrapper}>
                 <MaterialCommunityIcons name="currency-inr" size={20} color="#b88a5f" />
                 <TextInput
@@ -281,7 +339,16 @@ export default function PriceUpdateScreen() {
 
             {/* Category C */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Single AC Room</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Single AC Room</Text>
+                {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
+                  <Text style={styles.subLabel}>
+                    {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
+                    {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
+                    {remainingRooms.C !== undefined && `Rem: ${remainingRooms.C}`}
+                  </Text>
+                )}
+              </View>
               <View style={styles.inputWrapper}>
                 <MaterialCommunityIcons name="currency-inr" size={20} color="#b88a5f" />
                 <TextInput
@@ -297,7 +364,16 @@ export default function PriceUpdateScreen() {
 
             {/* Category D */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Single Non AC Room</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Single Non AC Room</Text>
+                {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
+                  <Text style={styles.subLabel}>
+                    {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
+                    {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
+                    {remainingRooms.D !== undefined && `Rem: ${remainingRooms.D}`}
+                  </Text>
+                )}
+              </View>
               <View style={styles.inputWrapper}>
                 <MaterialCommunityIcons name="currency-inr" size={20} color="#b88a5f" />
                 <TextInput
@@ -333,6 +409,19 @@ export default function PriceUpdateScreen() {
               )}
             </View>
 
+            {/* Fetch Button */}
+            <Button
+              mode="outlined"
+              onPress={() => handleFetchPrevious(true)}
+              disabled={isFetchingPrevious || isConnected === false}
+              loading={isFetchingPrevious}
+              style={styles.fetchButton}
+              labelStyle={styles.fetchButtonLabel}
+              textColor="#b88a5f"
+            >
+              {isFetchingPrevious ? 'Fetching Prices...' : "Fetch Previous Day's Prices"}
+            </Button>
+
             {/* Submit Button */}
             <Button
               mode="contained"
@@ -340,6 +429,7 @@ export default function PriceUpdateScreen() {
               disabled={isConnected === false}
               style={[
                 styles.submitButton,
+                { marginTop: 12 },
                 submitted && styles.submitButtonSuccess,
               ]}
               labelStyle={styles.submitButtonLabel}
@@ -534,11 +624,25 @@ const styles = StyleSheet.create({
   formGroup: {
     marginBottom: 20,
   },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   label: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 8,
+  },
+  subLabel: {
+    fontSize: 11,
+    color: '#666666',
+    fontWeight: '600',
+    backgroundColor: '#f0ece6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -571,6 +675,16 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 14,
     color: '#1a1a1a',
+  },
+  fetchButton: {
+    marginTop: 24,
+    paddingVertical: 6,
+    borderColor: '#b88a5f',
+    borderWidth: 1.5,
+  },
+  fetchButtonLabel: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   submitButton: {
     marginTop: 24,

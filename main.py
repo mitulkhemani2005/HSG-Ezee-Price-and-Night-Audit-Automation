@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+import anyio
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from pydantic import BaseModel
@@ -60,9 +61,6 @@ class PriceSchedule(BaseModel):
     time: str   # "HH:MM"
     prices: PriceData
 
-class AuditConfig(BaseModel):
-    time: str
-
 class DeviceToken(BaseModel):
     token: str
 
@@ -95,21 +93,15 @@ def add_price_schedule(data: PriceSchedule):
 def get_schedules():
     return read_json("price_schedules.json")
 
-@app.post("/audit/time")
-def set_audit(data: AuditConfig):
-    write_json("audit_config.json", data.dict())
-    schedule_jobs()
-    return {"message": "audit updated"}
+@app.get("/price/previous")
+async def get_previous_prices():
+    try:
+        data = await anyio.to_thread.run_sync(run_fetch_previous_prices_sync)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/audit/time")
-def get_audit():
-    return read_json("audit_config.json")
 
-@app.delete("/audit/time")
-def delete_audit_time():
-    write_json("audit_config.json", {})
-    schedule_jobs()
-    return {"message": "deleted"}
 
 @app.get("/health")
 def health():
@@ -138,7 +130,21 @@ def set_value(page, selector, value):
     page.keyboard.press("Backspace")
     page.type(selector, str(value))
 
+current_fetch_process = None
+fetch_lock = threading.Lock()
+
 def run_price_update(prices):
+    global current_fetch_process
+    if current_fetch_process is not None:
+        try:
+            print("Terminating active fetch process to prioritize price update...")
+            current_fetch_process.terminate()
+            current_fetch_process.wait(timeout=5)
+        except Exception as e:
+            print("Error terminating fetch process:", e)
+        finally:
+            current_fetch_process = None
+
     for attempt in range(3):
         try:
             with sync_playwright() as p:
@@ -154,12 +160,16 @@ def run_price_update(prices):
                 page.goto("https://live.ipms247.com/unity/ratewizard/ratesinventory")
                 page.wait_for_selector("#input-2-1-3")
                 set_value(page, "#input-2-1-3", prices["A"])
+                #day remaining rooms = 2-0-3
                 page.wait_for_timeout(500)
                 set_value(page, "#input-2-7-3", prices["B"])
+                #day remaining rooms = 2-6-3
                 page.wait_for_timeout(500)
                 set_value(page, "#input-2-3-3", prices["C"])
+                #day remaining rooms = 2-2-3
                 page.wait_for_timeout(500)
                 set_value(page, "#input-2-5-3", prices["D"])
+                #day remaining rooms = 2-4-3
                 page.get_by_role("button", name="Save").click()
                 page.wait_for_timeout(5000)
                 browser.close()
@@ -169,6 +179,46 @@ def run_price_update(prices):
             print(f"Playwright error on attempt {attempt}:", e)
             if attempt == 2:
                 notify("Price Update Failed", "Prices failed to update")
+
+def run_fetch_previous_prices_sync():
+    global current_fetch_process
+    import subprocess
+    import sys
+    
+    for attempt in range(3):
+        try:
+            # Get path to fetch_worker.py in the same directory as main.py
+            worker_path = os.path.join(os.path.dirname(__file__), "fetch_worker.py")
+            
+            with fetch_lock:
+                current_fetch_process = subprocess.Popen(
+                    [sys.executable, worker_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                proc = current_fetch_process
+            
+            try:
+                stdout, stderr = proc.communicate(timeout=120)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout, stderr = proc.communicate()
+                raise Exception("Worker timed out")
+            finally:
+                if current_fetch_process == proc:
+                    current_fetch_process = None
+                
+            if proc.returncode != 0:
+                raise Exception(stderr or f"Worker failed with exit code {proc.returncode}")
+            
+            # Parse the stdout JSON
+            data = json.loads(stdout.strip())
+            return data
+        except Exception as e:
+            print(f"Subprocess fetch error on attempt {attempt}:", e)
+            if attempt == 2:
+                raise e
 
 def run_price_update_async(time_str, prices):
     def _price_thread():
@@ -188,22 +238,7 @@ def run_price_update_async(time_str, prices):
             
     threading.Thread(target=_price_thread).start()
 
-def run_audit():
-    print("Running night audit")
 
-def run_audit_async():
-    def _audit_thread():
-        run_audit()
-        try:
-            write_json("audit_config.json", {})
-            try:
-                scheduler.remove_job("audit_job")
-            except Exception:
-                pass
-        except Exception as e:
-            print("Cleanup error:", e)
-            
-    threading.Thread(target=_audit_thread).start()
 
 def schedule_jobs():
     scheduler.remove_all_jobs()
@@ -243,30 +278,6 @@ def schedule_jobs():
 
     if schedules_updated:
         write_json("price_schedules.json", active_schedules)
-
-    # Load audit time
-    audit = read_json("audit_config.json")
-    if "time" in audit and audit["time"]:
-        h, m = map(int, audit["time"].split(":"))
-        
-        target = now.replace(hour=h, minute=m, second=0, microsecond=0)
-        should_schedule = True
-        if target < now:
-            if (now - target).total_seconds() < 120:
-                target = now + timedelta(seconds=2)
-            else:
-                # Expired/past audit - discard
-                write_json("audit_config.json", {})
-                should_schedule = False
-
-        if should_schedule:
-            scheduler.add_job(
-                run_audit_async,
-                'date',
-                run_date=target,
-                id="audit_job",
-                replace_existing=True
-            )
 
 def send_email(subject, body):
     try:

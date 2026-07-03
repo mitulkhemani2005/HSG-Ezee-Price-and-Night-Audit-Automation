@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -24,6 +24,55 @@ export default function PriceUpdateForm() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
+  const [previousPrices, setPreviousPrices] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+  const [remainingRooms, setRemainingRooms] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+
+  const handleFetchPrevious = async (isManual = false) => {
+    setIsFetchingPrevious(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const fetchUrl = backendUrl ? `${backendUrl}/price/previous` : `${API_URL}/price/previous`;
+      const response = await fetch(fetchUrl, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch previous prices');
+      }
+      const data = await response.json();
+      if (data.prices) {
+        setFormData((prev) => ({
+          ...prev,
+          categoryA: (!isManual && prev.categoryA) ? prev.categoryA : (data.prices.A?.toString() || ''),
+          categoryB: (!isManual && prev.categoryB) ? prev.categoryB : (data.prices.B?.toString() || ''),
+          categoryC: (!isManual && prev.categoryC) ? prev.categoryC : (data.prices.C?.toString() || ''),
+          categoryD: (!isManual && prev.categoryD) ? prev.categoryD : (data.prices.D?.toString() || ''),
+        }));
+        setPreviousPrices(data.prices);
+        if (data.remaining) {
+          setRemainingRooms(data.remaining);
+        }
+        if (isManual && typeof isManual === 'boolean') {
+          alert("Successfully fetched previous day's prices and remaining rooms!");
+        }
+      } else {
+        throw new Error('No price data returned');
+      }
+    } catch (error) {
+      console.error('Error fetching previous prices:', error);
+      if (isManual && typeof isManual === 'boolean') {
+        alert('Failed to fetch previous day prices. Is the backend running?');
+      }
+    } finally {
+      setIsFetchingPrevious(false);
+    }
+  };
+
+  useEffect(() => {
+    handleFetchPrevious(false);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -86,9 +135,18 @@ export default function PriceUpdateForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Category A */}
         <div className="group">
-          <label htmlFor="categoryA" className="block text-sm font-semibold text-foreground mb-2">
-            Deluxe Queen AC Room
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="categoryA" className="text-sm font-semibold text-foreground">
+              Deluxe Queen AC Room
+            </label>
+            {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
+                {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
+                {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
+                {remainingRooms.A !== undefined && `Remaining: ${remainingRooms.A} rooms`}
+              </span>
+            )}
+          </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
@@ -107,9 +165,18 @@ export default function PriceUpdateForm() {
 
         {/* Category B */}
         <div className="group">
-          <label htmlFor="categoryB" className="block text-sm font-semibold text-foreground mb-2">
-            Standard Queen AC Room
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="categoryB" className="text-sm font-semibold text-foreground">
+              Standard Queen AC Room
+            </label>
+            {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
+                {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
+                {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
+                {remainingRooms.B !== undefined && `Remaining: ${remainingRooms.B} rooms`}
+              </span>
+            )}
+          </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
@@ -128,9 +195,18 @@ export default function PriceUpdateForm() {
 
         {/* Category C */}
         <div className="group">
-          <label htmlFor="categoryC" className="block text-sm font-semibold text-foreground mb-2">
-            Single AC Room
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="categoryC" className="text-sm font-semibold text-foreground">
+              Single AC Room
+            </label>
+            {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
+                {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
+                {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
+                {remainingRooms.C !== undefined && `Remaining: ${remainingRooms.C} rooms`}
+              </span>
+            )}
+          </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
@@ -149,9 +225,18 @@ export default function PriceUpdateForm() {
 
         {/* Category D */}
         <div className="group">
-          <label htmlFor="categoryD" className="block text-sm font-semibold text-foreground mb-2">
-            Single Non AC Room
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="categoryD" className="text-sm font-semibold text-foreground">
+              Single Non AC Room
+            </label>
+            {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
+                {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
+                {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
+                {remainingRooms.D !== undefined && `Remaining: ${remainingRooms.D} rooms`}
+              </span>
+            )}
+          </div>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">₹</span>
             <input
@@ -186,10 +271,21 @@ export default function PriceUpdateForm() {
         </div>
 
         {/* Submit Button */}
-        <div className="pt-6 flex gap-4">
+        <div className="pt-6 flex flex-col sm:flex-row gap-4">
+          <Button
+            suppressHydrationWarning
+            type="button"
+            onClick={() => handleFetchPrevious(true)}
+            disabled={isFetchingPrevious}
+            variant="outline"
+            className="flex-1 py-3 font-semibold rounded-lg border border-primary/50 text-primary hover:bg-primary/10 transition-all duration-300 transform hover:scale-105"
+          >
+            {isFetchingPrevious ? '⏳ Fetching Prices...' : '🔄 Fetch Previous Day\'s Prices'}
+          </Button>
           <Button
             suppressHydrationWarning
             type="submit"
+            disabled={submitted}
             className={`flex-1 py-3 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 ${buttonClass}`}
           >
             {buttonText}
