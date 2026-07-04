@@ -143,6 +143,20 @@ export default function PriceUpdateForm() {
         <p className="text-muted-foreground">Update pricing for all room categories</p>
       </div>
 
+      {remainingDate && (
+        <div className="mb-6 p-4 bg-muted/30 border border-border rounded-xl flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+              📅 Price Change Date:
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              {remainingDate}
+            </span>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Category A */}
         <div className="group">
@@ -151,10 +165,10 @@ export default function PriceUpdateForm() {
               Deluxe Queen AC Room
             </label>
             {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
-              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.A !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.A}`}
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border">
+                {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
                 {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
-                {remainingRooms.A !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.A} rooms`}
+                {remainingRooms.A !== undefined && `Remaining: ${remainingRooms.A} rooms`}
               </span>
             )}
           </div>
@@ -181,10 +195,10 @@ export default function PriceUpdateForm() {
               Standard Queen AC Room
             </label>
             {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
-              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.B !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.B}`}
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border">
+                {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
                 {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
-                {remainingRooms.B !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.B} rooms`}
+                {remainingRooms.B !== undefined && `Remaining: ${remainingRooms.B} rooms`}
               </span>
             )}
           </div>
@@ -211,10 +225,10 @@ export default function PriceUpdateForm() {
               Single AC Room
             </label>
             {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
-              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.C !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.C}`}
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border">
+                {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
                 {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
-                {remainingRooms.C !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.C} rooms`}
+                {remainingRooms.C !== undefined && `Remaining: ${remainingRooms.C} rooms`}
               </span>
             )}
           </div>
@@ -241,10 +255,10 @@ export default function PriceUpdateForm() {
               Single Non AC Room
             </label>
             {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
-              <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.D !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.D}`}
+              <span className="text-xs text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border">
+                {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
                 {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
-                {remainingRooms.D !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.D} rooms`}
+                {remainingRooms.D !== undefined && `Remaining: ${remainingRooms.D} rooms`}
               </span>
             )}
           </div>

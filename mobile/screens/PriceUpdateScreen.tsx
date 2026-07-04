@@ -293,6 +293,17 @@ export default function PriceUpdateScreen() {
             </View>
           )}
 
+          {/* Price Change Date */}
+          {remainingDate ? (
+            <View style={styles.fetchedDatesContainer}>
+              <View style={styles.fetchedHeader}>
+                <MaterialCommunityIcons name="calendar-clock" size={18} color="#b88a5f" />
+                <Text style={styles.fetchedTitle}>Price Change Date:</Text>
+                <Text style={styles.fetchedDateValue}>{remainingDate}</Text>
+              </View>
+            </View>
+          ) : null}
+
           {/* Form */}
           <View style={styles.formContainer}>
             {/* Category A */}
@@ -301,9 +312,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Deluxe Queen AC Room</Text>
                 {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.A !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.A}`}
+                    {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
                     {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
-                    {remainingRooms.A !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.A}`}
+                    {remainingRooms.A !== undefined && `Rem: ${remainingRooms.A}`}
                   </Text>
                 )}
               </View>
@@ -326,9 +337,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Standard Queen AC Room</Text>
                 {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.B !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.B}`}
+                    {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
                     {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
-                    {remainingRooms.B !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.B}`}
+                    {remainingRooms.B !== undefined && `Rem: ${remainingRooms.B}`}
                   </Text>
                 )}
               </View>
@@ -351,9 +362,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Single AC Room</Text>
                 {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.C !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.C}`}
+                    {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
                     {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
-                    {remainingRooms.C !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.C}`}
+                    {remainingRooms.C !== undefined && `Rem: ${remainingRooms.C}`}
                   </Text>
                 )}
               </View>
@@ -376,9 +387,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Single Non AC Room</Text>
                 {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.D !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.D}`}
+                    {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
                     {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
-                    {remainingRooms.D !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.D}`}
+                    {remainingRooms.D !== undefined && `Rem: ${remainingRooms.D}`}
                   </Text>
                 )}
               </View>
@@ -817,5 +828,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
     marginTop: 4,
+  },
+  fetchedDatesContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fetchedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  fetchedTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  fetchedDateValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#b88a5f',
+    marginLeft: 'auto',
   },
 });
