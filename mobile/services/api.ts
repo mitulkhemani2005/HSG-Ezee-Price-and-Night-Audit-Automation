@@ -88,8 +88,8 @@ export async function deleteSchedule(time: string): Promise<{ message: string; d
   });
 }
 
-export async function getPreviousPrices(): Promise<{ prices: PriceData; remaining: PriceData }> {
-  return apiRequest<{ prices: PriceData; remaining: PriceData }>('/price/previous', {
+export async function getPreviousPrices(): Promise<{ prices: PriceData; remaining: PriceData; price_date?: string; remaining_date?: string }> {
+  return apiRequest<{ prices: PriceData; remaining: PriceData; price_date?: string; remaining_date?: string }>('/price/previous', {
     method: 'GET',
   });
 }

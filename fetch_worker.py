@@ -60,6 +60,33 @@ def main():
             rem_c = get_element_val(page, "#cell-2-2-3", is_input=False)
             rem_d = get_element_val(page, "#cell-2-4-3", is_input=False)
             
+            # Extract date headers
+            js_dates = """
+            () => {
+                const headers = [];
+                const divs = document.querySelectorAll('div');
+                divs.forEach((d) => {
+                    if (d.children.length === 3) {
+                        const c0 = d.children[0].innerText.trim();
+                        const c1 = d.children[1].innerText.trim();
+                        const c2 = d.children[2].innerText.trim();
+                        
+                        const isDay = /^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)$/i.test(c0);
+                        const isDate = /^\\d{1,2}$/.test(c1);
+                        const isMonth = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(c2);
+                        
+                        if (isDay && isDate && isMonth) {
+                            headers.push(`${c0} ${c1} ${c2}`);
+                        }
+                    }
+                });
+                return headers;
+            }
+            """
+            headers = page.evaluate(js_dates)
+            price_date = headers[2] if len(headers) > 2 else "Unknown"
+            remaining_date = headers[3] if len(headers) > 3 else "Unknown"
+
             browser.close()
             
             result = {
@@ -74,7 +101,9 @@ def main():
                     "B": rem_b,
                     "C": rem_c,
                     "D": rem_d
-                }
+                },
+                "price_date": price_date,
+                "remaining_date": remaining_date
             }
             print(json.dumps(result))
             sys.exit(0)

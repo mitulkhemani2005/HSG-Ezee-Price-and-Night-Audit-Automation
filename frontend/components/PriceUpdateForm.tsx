@@ -27,6 +27,8 @@ export default function PriceUpdateForm() {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [previousPrices, setPreviousPrices] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
   const [remainingRooms, setRemainingRooms] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+  const [priceDate, setPriceDate] = useState<string>('');
+  const [remainingDate, setRemainingDate] = useState<string>('');
 
   const handleFetchPrevious = async (isManual = false) => {
     setIsFetchingPrevious(true);
@@ -53,6 +55,12 @@ export default function PriceUpdateForm() {
         setPreviousPrices(data.prices);
         if (data.remaining) {
           setRemainingRooms(data.remaining);
+        }
+        if (data.price_date) {
+          setPriceDate(data.price_date);
+        }
+        if (data.remaining_date) {
+          setRemainingDate(data.remaining_date);
         }
         if (isManual && typeof isManual === 'boolean') {
           alert("Successfully fetched previous day's prices and remaining rooms!");
@@ -85,10 +93,13 @@ export default function PriceUpdateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_URL}/price/schedule`, {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const submitUrl = backendUrl ? `${backendUrl}/price/schedule` : `${API_URL}/price/schedule`;
+      const response = await fetch(submitUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify({
           time: formData.updateTime,
@@ -141,9 +152,9 @@ export default function PriceUpdateForm() {
             </label>
             {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
               <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
+                {previousPrices.A !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.A}`}
                 {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
-                {remainingRooms.A !== undefined && `Remaining: ${remainingRooms.A} rooms`}
+                {remainingRooms.A !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.A} rooms`}
               </span>
             )}
           </div>
@@ -171,9 +182,9 @@ export default function PriceUpdateForm() {
             </label>
             {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
               <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
+                {previousPrices.B !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.B}`}
                 {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
-                {remainingRooms.B !== undefined && `Remaining: ${remainingRooms.B} rooms`}
+                {remainingRooms.B !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.B} rooms`}
               </span>
             )}
           </div>
@@ -201,9 +212,9 @@ export default function PriceUpdateForm() {
             </label>
             {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
               <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
+                {previousPrices.C !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.C}`}
                 {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
-                {remainingRooms.C !== undefined && `Remaining: ${remainingRooms.C} rooms`}
+                {remainingRooms.C !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.C} rooms`}
               </span>
             )}
           </div>
@@ -231,9 +242,9 @@ export default function PriceUpdateForm() {
             </label>
             {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
               <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full border border-border">
-                {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
+                {previousPrices.D !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.D}`}
                 {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
-                {remainingRooms.D !== undefined && `Remaining: ${remainingRooms.D} rooms`}
+                {remainingRooms.D !== undefined && `Remaining${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.D} rooms`}
               </span>
             )}
           </div>

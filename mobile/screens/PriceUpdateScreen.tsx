@@ -45,6 +45,8 @@ export default function PriceUpdateScreen() {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [previousPrices, setPreviousPrices] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
   const [remainingRooms, setRemainingRooms] = useState<{A?: number, B?: number, C?: number, D?: number}>({});
+  const [priceDate, setPriceDate] = useState<string>('');
+  const [remainingDate, setRemainingDate] = useState<string>('');
 
   const handleFetchPrevious = async (isManual = false) => {
     setIsFetchingPrevious(true);
@@ -61,6 +63,12 @@ export default function PriceUpdateScreen() {
         setPreviousPrices(data.prices);
         if (data.remaining) {
           setRemainingRooms(data.remaining);
+        }
+        if (data.price_date) {
+          setPriceDate(data.price_date);
+        }
+        if (data.remaining_date) {
+          setRemainingDate(data.remaining_date);
         }
         if (isManual) {
           Alert.alert('Success', "Successfully fetched previous day's prices and remaining rooms!");
@@ -293,9 +301,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Deluxe Queen AC Room</Text>
                 {(previousPrices.A !== undefined || remainingRooms.A !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.A !== undefined && `Prev: ₹${previousPrices.A}`}
+                    {previousPrices.A !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.A}`}
                     {previousPrices.A !== undefined && remainingRooms.A !== undefined && ' | '}
-                    {remainingRooms.A !== undefined && `Rem: ${remainingRooms.A}`}
+                    {remainingRooms.A !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.A}`}
                   </Text>
                 )}
               </View>
@@ -318,9 +326,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Standard Queen AC Room</Text>
                 {(previousPrices.B !== undefined || remainingRooms.B !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.B !== undefined && `Prev: ₹${previousPrices.B}`}
+                    {previousPrices.B !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.B}`}
                     {previousPrices.B !== undefined && remainingRooms.B !== undefined && ' | '}
-                    {remainingRooms.B !== undefined && `Rem: ${remainingRooms.B}`}
+                    {remainingRooms.B !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.B}`}
                   </Text>
                 )}
               </View>
@@ -343,9 +351,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Single AC Room</Text>
                 {(previousPrices.C !== undefined || remainingRooms.C !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.C !== undefined && `Prev: ₹${previousPrices.C}`}
+                    {previousPrices.C !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.C}`}
                     {previousPrices.C !== undefined && remainingRooms.C !== undefined && ' | '}
-                    {remainingRooms.C !== undefined && `Rem: ${remainingRooms.C}`}
+                    {remainingRooms.C !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.C}`}
                   </Text>
                 )}
               </View>
@@ -368,9 +376,9 @@ export default function PriceUpdateScreen() {
                 <Text style={styles.label}>Single Non AC Room</Text>
                 {(previousPrices.D !== undefined || remainingRooms.D !== undefined) && (
                   <Text style={styles.subLabel}>
-                    {previousPrices.D !== undefined && `Prev: ₹${previousPrices.D}`}
+                    {previousPrices.D !== undefined && `Prev${priceDate ? ` (${priceDate})` : ''}: ₹${previousPrices.D}`}
                     {previousPrices.D !== undefined && remainingRooms.D !== undefined && ' | '}
-                    {remainingRooms.D !== undefined && `Rem: ${remainingRooms.D}`}
+                    {remainingRooms.D !== undefined && `Rem${remainingDate ? ` (${remainingDate})` : ''}: ${remainingRooms.D}`}
                   </Text>
                 )}
               </View>
